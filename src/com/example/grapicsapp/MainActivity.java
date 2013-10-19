@@ -1,6 +1,5 @@
 package com.example.grapicsapp;
 
-import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
@@ -42,13 +41,24 @@ public class MainActivity extends Activity {
 	
 	private void readFile() {
 		try {
-			//buf = new BufferedReader(new FileReader("/storage/sdcard0/Download/capsule.obj"));
 			Scanner lineScanner;
+			//FileReader file = new FileReader("/storage/sdcard0/Download/capsule.obj");
+			int arraySize = 0;
+			String line = null;
 			
 			scanner = new Scanner(new FileReader("/storage/sdcard0/Download/capsule.obj"));
-			//buf.readLine();
+			
+			//scan through file to determine the size of the ArrayList
+			while(scanner.hasNextLine()) {
+				line = scanner.nextLine();
+				if(line.charAt(0) == 'v' && line.charAt(1) != 't')
+					arraySize = arraySize + 3;
+			}
+			vectors.ensureCapacity(arraySize);
+			//scanner.close();
+			scanner = new Scanner(new FileReader("/storage/sdcard0/Download/capsule.obj"));
 			scanner.nextLine();
-			String line = scanner.nextLine();
+			line = scanner.nextLine();
 			while(line != null && line.charAt(0) == 'v' && line.charAt(1) != 't') {
 				lineScanner = new Scanner(line);
 				lineScanner.next();
@@ -60,7 +70,6 @@ public class MainActivity extends Activity {
 				else
 					line = null;
 			}
-			//close scanners
 			//System.out.println("Read " + (char) buf.read());
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
@@ -68,6 +77,9 @@ public class MainActivity extends Activity {
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		}
+		finally {
+			scanner.close();
 		}
 	}
 
