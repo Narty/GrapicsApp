@@ -44,7 +44,7 @@ public class MainActivity extends Activity {
 		drawListArray = new short[faces.size()];		
 		for (int i = 0; i < faces.size(); i++) {
 		    Short s = faces.get(i);
-		    drawListArray[i] = s;
+		    drawListArray[i] = (short) (s - 1); // -1 from the short values as they are read in starting from 1 whereas the array is zero based for the vertices
 		}
 		System.out.println("Array conversion complete!");
 	}

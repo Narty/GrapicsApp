@@ -19,8 +19,12 @@ public class MyRenderer implements GLSurfaceView.Renderer {
     private final float[] mProjMatrix = new float[16];
     private final float[] mVMatrix = new float[16];
     private final float[] mRotationMatrix = new float[16];
-	
+    private final float[] mModelMatrix = new float[16];
+	private float[] mTempMatrix = new float[16];
+    
     public volatile float mAngle;
+    public volatile float mX;
+    public volatile float mY;
 
 	public void onSurfaceCreated(GL10 unused, EGLConfig config) {
         // Set the background frame color
@@ -35,14 +39,22 @@ public class MyRenderer implements GLSurfaceView.Renderer {
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
         
         Matrix.setLookAtM(mVMatrix, 0, 0, 0, -3, 0f, 0f, 0f, 0f, 1.0f, 0.0f);
-        
+        //Matrix.setIdentityM(mModelMatrix, 0);
         // Calculate the projection and view transformation
         Matrix.multiplyMM(mMVPMatrix, 0, mProjMatrix, 0, mVMatrix, 0);
         
         // Create a rotation transformation for the triangle
         //long time = SystemClock.uptimeMillis() % 4000L;
         //float angle = 0.090f * ((int) time);
-        Matrix.setRotateM(mRotationMatrix, 0, mAngle, 0, 0, -1.0f);
+        //Matrix.translateM(mModelMatrix, 0, -1f, 0, 0);
+        Matrix.scaleM(mRotationMatrix, 0, 0.25f ,0.25f ,0.25f);
+        Matrix.setRotateM(mRotationMatrix, 0, mAngle, 0, 0, -1.0f);  
+        
+        //mTempMatrix = mModelMatrix.clone();
+        //Matrix.multiplyMM(mModelMatrix,0 ,mTempMatrix,0 , mRotationMatrix, 0);
+        
+        //mTempMatrix = mMVPMatrix.clone();
+        //Matrix.multiplyMM(mMVPMatrix, 0, mTempMatrix, 0, mModelMatrix, 0);
         
         // Combine the rotation matrix with the projection and camera view
         Matrix.multiplyMM(mMVPMatrix, 0, mRotationMatrix, 0, mMVPMatrix, 0);
