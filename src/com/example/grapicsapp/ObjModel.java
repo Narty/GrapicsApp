@@ -3,19 +3,16 @@ package com.example.grapicsapp;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.FloatBuffer;
+import java.nio.ShortBuffer;
 
 import android.opengl.GLES20;
 
 public class ObjModel {
 	private final FloatBuffer vertexBuffer;
+	private final ShortBuffer drawListBuffer;
 
 	// number of coordinates per vertex in this array
 	static final int COORDS_PER_VERTEX = 3;
-	static float triangleCoords[] = { // in counterclockwise order:
-	0.0f, 0.322008459f, 0.0f, // top x,y,z
-			-0.5f, -0.311004243f, 0.0f, // bottom left
-			0.5f, -0.311004243f, 0.0f // bottom right
-	};
 
 	// Set color with red, green, blue and alpha (opacity) values
 	float color[] = { 0.63671875f, 0.76953125f, 0.22265625f, 1.0f };
@@ -60,6 +57,15 @@ public class ObjModel {
 		// set the buffer to read the first coordinate
 		vertexBuffer.position(0);
 		
+		// initialize byte buffer for the draw list
+        ByteBuffer dlb = ByteBuffer.allocateDirect(
+        // (# of coordinate values * 2 bytes per short)
+                MainActivity.drawListArray.length * 2);
+        dlb.order(ByteOrder.nativeOrder());
+        drawListBuffer = dlb.asShortBuffer();
+        drawListBuffer.put(MainActivity.drawListArray);
+        drawListBuffer.position(0);
+		
 		int vertexShader = MyRenderer.loadShader(GLES20.GL_VERTEX_SHADER, vertexShaderCode);
 	    int fragmentShader = MyRenderer.loadShader(GLES20.GL_FRAGMENT_SHADER, fragmentShaderCode);
 
@@ -99,7 +105,8 @@ public class ObjModel {
 	    MyRenderer.checkGlError("glUniformMatrix4fv");
 
 	    // Draw the triangle
-	    GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, vertexCount);
+	    GLES20.glDrawElements(GLES20.GL_TRIANGLES, MainActivity.drawListArray.length,
+                GLES20.GL_UNSIGNED_SHORT, drawListBuffer);
 
 	    // Disable vertex array
 	    GLES20.glDisableVertexAttribArray(mPositionHandle);
