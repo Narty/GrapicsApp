@@ -15,12 +15,13 @@ public class MyRenderer implements GLSurfaceView.Renderer {
 	private Square mSquare;
 	private ObjModel obj;
 	
-    private final float[] mMVPMatrix = new float[16];
-    private final float[] mProjMatrix = new float[16];
-    private final float[] mVMatrix = new float[16];
-    private final float[] mRotationMatrix = new float[16];
-    private final float[] mModelMatrix = new float[16];
-	private float[] mTempMatrix = new float[16];
+	private final float[] modelMatrix = new float[16];
+    private final float[] projectionMatrix = new float[16];
+    private final float[] viewMatrix = new float[16];
+    private final float[] viewProjectionMatrix = new float[16];
+    //private final float[] mRotationMatrix = new float[16];
+    private final float[] modelViewProjectionMatrix = new float[16];
+	//private float[] mTempMatrix = new float[16];
     
     public volatile float mAngle;
     public volatile float mX = 0;
@@ -37,18 +38,22 @@ public class MyRenderer implements GLSurfaceView.Renderer {
     public void onDrawFrame(GL10 unused) {
         // Redraw background color
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
-        //test
-        Matrix.setIdentityM(mModelMatrix, 0);
         
-        Matrix.setLookAtM(mVMatrix, 0, 0, 0, -3, 0f, 0f, 0f, 0f, 1.0f, 0.0f);
+        Matrix.multiplyMM(viewProjectionMatrix, 0, projectionMatrix, 0, viewMatrix, 0);
         
-        Matrix.translateM(mModelMatrix, 0, 0f, mY, 0f);
-        Matrix.rotateM(mModelMatrix, 0, mX, 0f, 1f, 0f);
+        Matrix.setIdentityM(modelMatrix, 0);
+        
+        Matrix.translateM(modelMatrix, 0, 0f, 0.5f, 0f);
+        
+        Matrix.multiplyMM(modelViewProjectionMatrix, 0, viewProjectionMatrix, 0, modelMatrix, 0);
+        
+        ////Matrix.translateM(modelMatrix, 0, 0f, mY, 0f);
+        ////Matrix.rotateM(modelMatrix, 0, mX, 0f, 1f, 0f);
         
      // combine the model with the view matrix
-        Matrix.multiplyMM(mMVPMatrix, 0, mVMatrix, 0, mModelMatrix, 0);
+        ////Matrix.multiplyMM(modelViewProjectionMatrix, 0, viewMatrix, 0, modelMatrix, 0);
         // Calculate the projection and view transformation
-        Matrix.multiplyMM(mMVPMatrix, 0, mProjMatrix, 0, mMVPMatrix, 0);
+        ////Matrix.multiplyMM(modelViewProjectionMatrix, 0, projectionMatrix, 0, modelViewProjectionMatrix, 0);
         
         // Create a rotation transformation for the triangle
         //long time = SystemClock.uptimeMillis() % 4000L;
@@ -66,10 +71,10 @@ public class MyRenderer implements GLSurfaceView.Renderer {
         
         // Combine the rotation matrix with the projection and camera view
         //Matrix.multiplyMM(mMVPMatrix, 0, mRotationMatrix, 0, mMVPMatrix, 0);
-        Matrix.scaleM(mMVPMatrix, 0, 0.25f ,0.25f ,0.25f);
+        //Matrix.scaleM(modelViewProjectionMatrix, 0, 0.25f ,0.25f ,0.25f);
         
         //mTriangle.draw(mMVPMatrix);
-        obj.draw(mMVPMatrix);
+        obj.draw(modelViewProjectionMatrix);
         System.out.println("frame drawn " + mAngle);
     }
 
@@ -78,7 +83,8 @@ public class MyRenderer implements GLSurfaceView.Renderer {
         
         float ratio = (float) width / height;
         
-        Matrix.frustumM(mProjMatrix, 0, -ratio, ratio, -1, 1, 3, 7);
+        Matrix.frustumM(projectionMatrix, 0, -ratio, ratio, -1, 1, 3, 9);
+        Matrix.setLookAtM(viewMatrix, 0, 0f, 0f, 9f, 0f, 0f, 0f, 0f, 1.0f, 0.0f);
     }
     
     public static int loadShader(int type, String shaderCode){
