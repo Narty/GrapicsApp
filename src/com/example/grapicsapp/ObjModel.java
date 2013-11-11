@@ -34,7 +34,7 @@ public class ObjModel {
 
 		private int mPositionHandle;
 
-		private int mColorHandle;
+		private int mColorLocation;
 
 	    private int mMVPMatrixHandle;
 		
@@ -91,10 +91,10 @@ public class ObjModel {
 	                                 vertexStride, vertexBuffer);
 
 	    // get handle to fragment shader's vColor member
-	    mColorHandle = GLES20.glGetUniformLocation(mProgram, "vColor");
+	    mColorLocation = GLES20.glGetUniformLocation(mProgram, "vColor");
 
 	    // Set color for drawing the triangle
-	    GLES20.glUniform4fv(mColorHandle, 1, color, 0);
+	    GLES20.glUniform4fv(mColorLocation, 1, color, 0);
 	    
 	    // get handle to shape's transformation matrix
 	    mMVPMatrixHandle = GLES20.glGetUniformLocation(mProgram, "uMVPMatrix");

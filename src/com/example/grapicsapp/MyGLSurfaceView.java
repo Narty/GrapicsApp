@@ -43,8 +43,12 @@ import android.view.MotionEvent;
 				mRenderer.mAngle += (dx + dy) * TOUCH_SCALE_FACTOR;  // = 180.0f / 320
 				//mRenderer.mX = dx * TOUCH_SCALE_FACTOR;
 				//mRenderer.mY = dy * TOUCH_SCALE_FACTOR;
-				mRenderer.mX = x * TOUCH_SCALE_FACTOR;
-				mRenderer.mY = y * TOUCH_SCALE_FACTOR;
+				if(mRenderer.mX % 360 == 0)
+					mRenderer.mX = 0;
+				mRenderer.mX += 1f;
+				if(mRenderer.mY % 1 == 0)
+					mRenderer.mY = -1f;
+				mRenderer.mY += 0.1f;
 	            requestRender();
 	            System.out.println("x: " + x + " Y: " + y);
 	            System.out.println("dx: " + dx + " dY: " + dy);

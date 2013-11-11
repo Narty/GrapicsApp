@@ -23,7 +23,7 @@ public class MyRenderer implements GLSurfaceView.Renderer {
 	private float[] mTempMatrix = new float[16];
     
     public volatile float mAngle;
-    public volatile float mX;
+    public volatile float mX = 0;
     public volatile float mY;
 
 	public void onSurfaceCreated(GL10 unused, EGLConfig config) {
@@ -38,17 +38,25 @@ public class MyRenderer implements GLSurfaceView.Renderer {
         // Redraw background color
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
         
+        Matrix.setIdentityM(mModelMatrix, 0);
+        
         Matrix.setLookAtM(mVMatrix, 0, 0, 0, -3, 0f, 0f, 0f, 0f, 1.0f, 0.0f);
-        //Matrix.setIdentityM(mModelMatrix, 0);
+        
+        Matrix.translateM(mModelMatrix, 0, 0f, mY, 0f);
+        Matrix.rotateM(mModelMatrix, 0, mX, 0f, 1f, 0f);
+        
+     // combine the model with the view matrix
+        Matrix.multiplyMM(mMVPMatrix, 0, mVMatrix, 0, mModelMatrix, 0);
         // Calculate the projection and view transformation
-        Matrix.multiplyMM(mMVPMatrix, 0, mProjMatrix, 0, mVMatrix, 0);
+        Matrix.multiplyMM(mMVPMatrix, 0, mProjMatrix, 0, mMVPMatrix, 0);
         
         // Create a rotation transformation for the triangle
         //long time = SystemClock.uptimeMillis() % 4000L;
         //float angle = 0.090f * ((int) time);
         //Matrix.translateM(mModelMatrix, 0, -1f, 0, 0);
-        Matrix.scaleM(mRotationMatrix, 0, 0.25f ,0.25f ,0.25f);
-        Matrix.setRotateM(mRotationMatrix, 0, mAngle, 0, 0, -1.0f);  
+        //Matrix.setRotateM(mRotationMatrix, 0, mAngle, 0, mAngle, -1.0f);
+        
+          
         
         //mTempMatrix = mModelMatrix.clone();
         //Matrix.multiplyMM(mModelMatrix,0 ,mTempMatrix,0 , mRotationMatrix, 0);
@@ -57,7 +65,8 @@ public class MyRenderer implements GLSurfaceView.Renderer {
         //Matrix.multiplyMM(mMVPMatrix, 0, mTempMatrix, 0, mModelMatrix, 0);
         
         // Combine the rotation matrix with the projection and camera view
-        Matrix.multiplyMM(mMVPMatrix, 0, mRotationMatrix, 0, mMVPMatrix, 0);
+        //Matrix.multiplyMM(mMVPMatrix, 0, mRotationMatrix, 0, mMVPMatrix, 0);
+        Matrix.scaleM(mMVPMatrix, 0, 0.25f ,0.25f ,0.25f);
         
         //mTriangle.draw(mMVPMatrix);
         obj.draw(mMVPMatrix);
