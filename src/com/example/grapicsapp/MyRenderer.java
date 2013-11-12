@@ -24,8 +24,8 @@ public class MyRenderer implements GLSurfaceView.Renderer {
 	//private float[] mTempMatrix = new float[16];
     
     public volatile float mAngle;
-    public volatile float mX = 0;
-    public volatile float mY;
+    public volatile float normalisedX = 0;
+    public volatile float normalisedY;
 
 	public void onSurfaceCreated(GL10 unused, EGLConfig config) {
         // Set the background frame color
@@ -43,7 +43,11 @@ public class MyRenderer implements GLSurfaceView.Renderer {
         
         Matrix.setIdentityM(modelMatrix, 0);
         
-        Matrix.translateM(modelMatrix, 0, 0f, 0.5f, 0f);
+        //Matrix.translateM(modelMatrix, 0, normalisedX, normalisedY, 0f);
+        
+        Matrix.rotateM(modelMatrix, 0, (90f / -normalisedX), 0f, 1f, 0f);
+        Matrix.rotateM(modelMatrix, 0, (90f / -normalisedY), 1f, 0f, 0f);
+        //Matrix.rotateM(modelMatrix, 0, 90f, 1f, 0f, 0f);
         
         Matrix.multiplyMM(modelViewProjectionMatrix, 0, viewProjectionMatrix, 0, modelMatrix, 0);
         
@@ -83,8 +87,8 @@ public class MyRenderer implements GLSurfaceView.Renderer {
         
         float ratio = (float) width / height;
         
-        Matrix.frustumM(projectionMatrix, 0, -ratio, ratio, -1, 1, 3, 9);
-        Matrix.setLookAtM(viewMatrix, 0, 0f, 0f, 9f, 0f, 0f, 0f, 0f, 1.0f, 0.0f);
+        Matrix.frustumM(projectionMatrix, 0, -ratio, ratio, -1, 1, 1, 9);
+        Matrix.setLookAtM(viewMatrix, 0, 0f, 0f, 7f, 0f, 0f, 0f, 0f, 1.0f, 0.0f);
     }
     
     public static int loadShader(int type, String shaderCode){

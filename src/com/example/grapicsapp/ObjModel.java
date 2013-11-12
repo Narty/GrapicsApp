@@ -75,7 +75,7 @@ public class ObjModel {
 	    GLES20.glLinkProgram(mProgram);                  // creates OpenGL ES program executables
 	}
 	
-	public void draw(float[] mvpMatrix) {
+	public void draw(float[] modelViewProjectionMatrix) {
 	    // Add program to OpenGL ES environment
 	    GLES20.glUseProgram(mProgram);
 
@@ -101,7 +101,7 @@ public class ObjModel {
 	    MyRenderer.checkGlError("glGetUniformLocation");
 
 	    // Apply the projection and view transformation
-	    GLES20.glUniformMatrix4fv(mMVPMatrixHandle, 1, false, mvpMatrix, 0);
+	    GLES20.glUniformMatrix4fv(mMVPMatrixHandle, 1, false, modelViewProjectionMatrix, 0);
 	    MyRenderer.checkGlError("glUniformMatrix4fv");
 
 	    // Draw the triangle

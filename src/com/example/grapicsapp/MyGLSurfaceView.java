@@ -41,17 +41,17 @@ import android.view.MotionEvent;
 		              dy = dy * -1 ;
 		            }
 				mRenderer.mAngle += (dx + dy) * TOUCH_SCALE_FACTOR;  // = 180.0f / 320
-				//mRenderer.mX = dx * TOUCH_SCALE_FACTOR;
-				//mRenderer.mY = dy * TOUCH_SCALE_FACTOR;
-				if(mRenderer.mX % 360 == 0)
-					mRenderer.mX = 0;
-				mRenderer.mX += 1f;
-				if(mRenderer.mY % 1 == 0)
-					mRenderer.mY = -1f;
-				mRenderer.mY += 0.1f;
+				
+				mRenderer.normalisedX = (e.getX() / (float) this.getWidth()) * 2 - 1;
+				mRenderer.normalisedY = -((e.getY() / (float) this.getHeight()) * 2 - 1);
+				
+				if(mRenderer.normalisedX < 0.1 && mRenderer.normalisedX > -0.1)
+					mRenderer.normalisedX = 0.1f;
+				if(mRenderer.normalisedY < 0.1 && mRenderer.normalisedY > -0.1)
+					mRenderer.normalisedY = 0.1f;
+				
 	            requestRender();
-	            System.out.println("x: " + x + " Y: " + y);
-	            System.out.println("dx: " + dx + " dY: " + dy);
+	            System.out.println("x: " + mRenderer.normalisedX + " Y: " + mRenderer.normalisedY);
 			}
 			
 			mPreviousX = x;
