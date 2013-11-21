@@ -16,9 +16,11 @@ public class MainActivity extends Activity {
 	private GLSurfaceView GLView;
 	private ArrayList<Float> vectors = new ArrayList<Float>();
 	private ArrayList<Short> faces = new ArrayList<Short>();
+	private ArrayList<Float> vectorNormals = new ArrayList<Float>();
 	private Scanner scanner;
 	public static float[] floatArray;
 	public static short[] drawListArray;
+	public static float[] floatNormalArray;
 	
 	
 	@Override
@@ -32,12 +34,20 @@ public class MainActivity extends Activity {
 		System.out.println(faces.get(faces.size() - 1));
 		System.out.println("Read complete");
 		System.out.println("Vectors: " + vectors.size());
+		System.out.println("Vector Normals: " + vectorNormals.size());
 		System.out.println("Faces: " + faces.size());
 		System.out.println("Start vector array conversion");
 		floatArray = new float[vectors.size()];		
 		for (int i = 0; i < vectors.size(); i++) {
 		    Float f = vectors.get(i);
 		    floatArray[i] = (f != null ? f : Float.NaN);
+		}
+		System.out.println("Array conversion complete!");
+		System.out.println("Start vector normal array conversion");
+		floatNormalArray = new float[vectorNormals.size()];		
+		for (int i = 0; i < vectorNormals.size(); i++) {
+		    Float f = vectorNormals.get(i);
+		    floatNormalArray[i] = (f != null ? f : Float.NaN);
 		}
 		System.out.println("Array conversion complete!");
 		System.out.println("Start face array conversion");
@@ -54,54 +64,75 @@ public class MainActivity extends Activity {
 			Scanner lineScanner;
 			String line = null;
 
-			scanner = new Scanner(new FileReader("/storage/sdcard0/Download/capsule.obj"));
+			scanner = new Scanner(new FileReader(
+					"/storage/sdcard0/Download/capsule.obj"));
 			scanner.nextLine();
 			line = scanner.nextLine();
 			System.out.println("while vector values start...");
-			while(line.charAt(0) == 'v' && line.charAt(1) != 't' && line.charAt(1) != 'n') {
+			while (line.charAt(0) == 'v' && line.charAt(1) != 't'
+					&& line.charAt(1) != 'n') {
 				lineScanner = new Scanner(line);
 				lineScanner.next();
 				vectors.add(Float.parseFloat(lineScanner.next()));
 				vectors.add(Float.parseFloat(lineScanner.next()));
 				vectors.add(Float.parseFloat(lineScanner.next()));
-				if(scanner.hasNextLine())
+				if (scanner.hasNextLine())
 					line = scanner.nextLine();
 				else
 					break;
 			}
-			System.out.println("while vector values finish!");
+			System.out.println("while vector values finished!");			
+			System.out.println("while vector normal values start");
 			
-			//read other scanner values
-			while(line.charAt(0) != 'f')
+			while (line.charAt(0) == 'v' && line.charAt(1) == 'n') {
+				lineScanner = new Scanner(line);
+				lineScanner.next();
+				vectorNormals.add(Float.parseFloat(lineScanner.next()));
+				vectorNormals.add(Float.parseFloat(lineScanner.next()));
+				vectorNormals.add(Float.parseFloat(lineScanner.next()));
+				if (scanner.hasNextLine())
+					line = scanner.nextLine();
+				else
+					break;
+			}
+			System.out.println("while vector normal values finished!");
+			
+			while (line.charAt(0) != 'v' && line.charAt(1) != 'n') {
 				line = scanner.nextLine();
-			//read in face values
+			}
+
+			// read other scanner values
+			while (line.charAt(0) != 'f') {
+				line = scanner.nextLine();
+			}
+			// read in face values
 			System.out.println("while face values start...");
-			while(line.charAt(0) == 'f') {
+			while (line.charAt(0) == 'f') {
 				lineScanner = new Scanner(line);
 				lineScanner.useDelimiter(" |/");
 				lineScanner.next();
 				faces.add(Short.parseShort(lineScanner.next()));
 				lineScanner.next();
-				lineScanner.next();// skip the texture and normal face values for now
+				lineScanner.next();// skip the texture and normal face values
+									// for now
 				faces.add(Short.parseShort(lineScanner.next()));
 				lineScanner.next();
 				lineScanner.next();
 				faces.add(Short.parseShort(lineScanner.next()));
-				if(scanner.hasNextLine())
+				if (scanner.hasNextLine())
 					line = scanner.nextLine();
 				else
 					break;
 			}
-			System.out.println("while face values finish!");
-			
+			System.out.println("while face values finished!");
+
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
-		finally {
+		} finally {
 			scanner.close();
 		}
 	}

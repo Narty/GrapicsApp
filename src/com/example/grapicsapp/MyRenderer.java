@@ -19,27 +19,44 @@ public class MyRenderer implements GLSurfaceView.Renderer {
     private final float[] projectionMatrix = new float[16];
     private final float[] viewMatrix = new float[16];
     private final float[] viewProjectionMatrix = new float[16];
-    //private final float[] mRotationMatrix = new float[16];
     private final float[] modelViewProjectionMatrix = new float[16];
-	//private float[] mTempMatrix = new float[16];
+    private float[] mLightModelMatrix = new float[16];
+    private final float[] mLightPosInModelSpace = new float[] {0.0f, 0.0f, 0.0f, 1.0f};
+    private final float[] mLightPosInWorldSpace = new float[4];
+    private final float[] mLightPosInEyeSpace = new float[4];
+    private final float[] modelViewMatrix = new float[16];
     
     public volatile float mAngle;
     public volatile float normalisedX = 0;
     public volatile float normalisedY;
 
 	public void onSurfaceCreated(GL10 unused, EGLConfig config) {
-        // Set the background frame color
+        // Set the background frame colour
         GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        // Use culling to remove back faces.
+        GLES20.glEnable(GLES20.GL_CULL_FACE);
+        // Enable depth testing
+        GLES20.glEnable(GLES20.GL_DEPTH_TEST);
         //mTriangle = new Triangle();
         //mSquare = new Square();
         obj = new ObjModel();
     }
 
     public void onDrawFrame(GL10 unused) {
-        // Redraw background color
-        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT);
+        // Redraw background colour
+        GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
+        // Add program to OpenGL ES environment        
+	    GLES20.glUseProgram(obj.mPerVertexProgramHandle);
+        //Calculate light position
+        Matrix.setIdentityM(mLightModelMatrix, 0);
+        Matrix.translateM(mLightModelMatrix, 0, 0.0f, 0.0f, -5.0f);   
+        //Matrix.rotateM(mLightModelMatrix, 0, angleInDegrees, 0.0f, 1.0f, 0.0f);
+        Matrix.translateM(mLightModelMatrix, 0, 0.0f, 0.0f, 2.0f);
+               
+        Matrix.multiplyMV(mLightPosInWorldSpace, 0, mLightModelMatrix, 0, mLightPosInModelSpace, 0);
+        Matrix.multiplyMV(mLightPosInEyeSpace, 0, viewMatrix, 0, mLightPosInWorldSpace, 0);
         
-        Matrix.multiplyMM(viewProjectionMatrix, 0, projectionMatrix, 0, viewMatrix, 0);
+        //Matrix.multiplyMM(viewProjectionMatrix, 0, projectionMatrix, 0, viewMatrix, 0); removed here
         
         Matrix.setIdentityM(modelMatrix, 0);
         
@@ -49,37 +66,20 @@ public class MyRenderer implements GLSurfaceView.Renderer {
         Matrix.rotateM(modelMatrix, 0, (90f / -normalisedY), 1f, 0f, 0f);
         //Matrix.rotateM(modelMatrix, 0, 90f, 1f, 0f, 0f);
         
-        Matrix.multiplyMM(modelViewProjectionMatrix, 0, viewProjectionMatrix, 0, modelMatrix, 0);
+        Matrix.multiplyMM(modelViewMatrix, 0, viewMatrix, 0, modelMatrix, 0); // added here
         
-        ////Matrix.translateM(modelMatrix, 0, 0f, mY, 0f);
-        ////Matrix.rotateM(modelMatrix, 0, mX, 0f, 1f, 0f);
+        //Matrix.multiplyMM(modelViewProjectionMatrix, 0, viewProjectionMatrix, 0, modelMatrix, 0); removed here
         
-     // combine the model with the view matrix
-        ////Matrix.multiplyMM(modelViewProjectionMatrix, 0, viewMatrix, 0, modelMatrix, 0);
-        // Calculate the projection and view transformation
-        ////Matrix.multiplyMM(modelViewProjectionMatrix, 0, projectionMatrix, 0, modelViewProjectionMatrix, 0);
+        Matrix.multiplyMM(modelViewProjectionMatrix, 0, projectionMatrix, 0, modelViewMatrix, 0);
         
-        // Create a rotation transformation for the triangle
-        //long time = SystemClock.uptimeMillis() % 4000L;
-        //float angle = 0.090f * ((int) time);
-        //Matrix.translateM(mModelMatrix, 0, -1f, 0, 0);
-        //Matrix.setRotateM(mRotationMatrix, 0, mAngle, 0, mAngle, -1.0f);
-        
-          
-        
-        //mTempMatrix = mModelMatrix.clone();
-        //Matrix.multiplyMM(mModelMatrix,0 ,mTempMatrix,0 , mRotationMatrix, 0);
-        
-        //mTempMatrix = mMVPMatrix.clone();
-        //Matrix.multiplyMM(mMVPMatrix, 0, mTempMatrix, 0, mModelMatrix, 0);
-        
-        // Combine the rotation matrix with the projection and camera view
-        //Matrix.multiplyMM(mMVPMatrix, 0, mRotationMatrix, 0, mMVPMatrix, 0);
-        //Matrix.scaleM(modelViewProjectionMatrix, 0, 0.25f ,0.25f ,0.25f);
-        
-        //mTriangle.draw(mMVPMatrix);
-        obj.draw(modelViewProjectionMatrix);
+        obj.draw(modelViewProjectionMatrix, mLightPosInModelSpace, modelViewMatrix);
         System.out.println("frame drawn " + mAngle);
+        // Draw a point to indicate the light.    
+        // Pass in the transformation matrix.
+        Matrix.multiplyMM(modelViewProjectionMatrix, 0, viewMatrix, 0, mLightModelMatrix, 0);
+        Matrix.multiplyMM(modelViewProjectionMatrix, 0, projectionMatrix, 0, modelViewProjectionMatrix, 0);
+        GLES20.glUseProgram(obj.mPointProgramHandle); 
+        obj.drawLight(modelViewProjectionMatrix, mLightPosInModelSpace);
     }
 
     public void onSurfaceChanged(GL10 unused, int width, int height) {
@@ -97,9 +97,31 @@ public class MyRenderer implements GLSurfaceView.Renderer {
         // or a fragment shader type (GLES20.GL_FRAGMENT_SHADER)
         int shader = GLES20.glCreateShader(type);
 
-        // add the source code to the shader and compile it
-        GLES20.glShaderSource(shader, shaderCode);
-        GLES20.glCompileShader(shader);
+        if (shader != 0) 
+        {
+                // Pass in the shader source.
+                GLES20.glShaderSource(shader, shaderCode);
+
+                // Compile the shader.
+                GLES20.glCompileShader(shader);
+
+                // Get the compilation status.
+                final int[] compileStatus = new int[1];
+                GLES20.glGetShaderiv(shader, GLES20.GL_COMPILE_STATUS, compileStatus, 0);
+
+                // If the compilation failed, delete the shader.
+                if (compileStatus[0] == 0) 
+                {
+                        Log.e(TAG, "Error compiling shader: " + GLES20.glGetShaderInfoLog(shader));
+                        GLES20.glDeleteShader(shader);
+                        shader = 0;
+                }
+        }
+
+        if (shader == 0)
+        {                        
+                throw new RuntimeException("Error creating shader.");
+        }
 
         return shader;
     }
