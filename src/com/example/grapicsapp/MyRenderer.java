@@ -6,6 +6,7 @@ import javax.microedition.khronos.opengles.GL10;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
+import android.os.SystemClock;
 import android.util.Log;
 
 public class MyRenderer implements GLSurfaceView.Renderer {
@@ -14,6 +15,8 @@ public class MyRenderer implements GLSurfaceView.Renderer {
     private Triangle mTriangle;
 	private Square mSquare;
 	private ObjModel obj;
+	private int fps;
+	private long prevTime;
 	
 	private final float[] modelMatrix = new float[16];
     private final float[] projectionMatrix = new float[16];
@@ -32,9 +35,9 @@ public class MyRenderer implements GLSurfaceView.Renderer {
 
 	public void onSurfaceCreated(GL10 unused, EGLConfig config) {
         // Set the background frame colour
-        GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        GLES20.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
         // Use culling to remove back faces.
-        GLES20.glEnable(GLES20.GL_CULL_FACE);
+        //GLES20.glEnable(GLES20.GL_CULL_FACE);
         // Enable depth testing
         GLES20.glEnable(GLES20.GL_DEPTH_TEST);
         //mTriangle = new Triangle();
@@ -43,14 +46,27 @@ public class MyRenderer implements GLSurfaceView.Renderer {
     }
 
     public void onDrawFrame(GL10 unused) {
+    	//calculate fps
+    	fps++;
+    	long currentTime =  System.nanoTime();
+    	if(currentTime - prevTime > 999999999) {
+    		System.out.println(fps +  " fps");
+    		fps = 0;
+    		prevTime = currentTime;
+    	}
         // Redraw background colour
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
+        
+        long time = SystemClock.uptimeMillis() % 10000L;        
+        float angleInDegrees = 0.0f;//(360.0f / 10000.0f) * ((int) time);
+        
+        
         // Add program to OpenGL ES environment        
 	    GLES20.glUseProgram(obj.mPerVertexProgramHandle);
         //Calculate light position
         Matrix.setIdentityM(mLightModelMatrix, 0);
-        Matrix.translateM(mLightModelMatrix, 0, 0.0f, 0.0f, -5.0f);   
-        //Matrix.rotateM(mLightModelMatrix, 0, angleInDegrees, 0.0f, 1.0f, 0.0f);
+        Matrix.translateM(mLightModelMatrix, 0, 0.0f, 0.0f, -1.0f);   
+        Matrix.rotateM(mLightModelMatrix, 0, angleInDegrees, 0.0f, 1.0f, 0.0f);
         Matrix.translateM(mLightModelMatrix, 0, 0.0f, 0.0f, 2.0f);
                
         Matrix.multiplyMV(mLightPosInWorldSpace, 0, mLightModelMatrix, 0, mLightPosInModelSpace, 0);
@@ -61,6 +77,9 @@ public class MyRenderer implements GLSurfaceView.Renderer {
         Matrix.setIdentityM(modelMatrix, 0);
         
         //Matrix.translateM(modelMatrix, 0, normalisedX, normalisedY, 0f);
+        Matrix.translateM(modelMatrix, 0, 0.0f, 0.0f, -4.0f);
+        
+        //Matrix.scaleM(modelMatrix, 0, 0.25f, 0.25f, 0.25f);
         
         Matrix.rotateM(modelMatrix, 0, (90f / -normalisedX), 0f, 1f, 0f);
         Matrix.rotateM(modelMatrix, 0, (90f / -normalisedY), 1f, 0f, 0f);
@@ -72,14 +91,14 @@ public class MyRenderer implements GLSurfaceView.Renderer {
         
         Matrix.multiplyMM(modelViewProjectionMatrix, 0, projectionMatrix, 0, modelViewMatrix, 0);
         
-        obj.draw(modelViewProjectionMatrix, mLightPosInModelSpace, modelViewMatrix);
+        obj.draw(modelViewProjectionMatrix, mLightPosInEyeSpace, modelViewMatrix);
         System.out.println("frame drawn " + mAngle);
         // Draw a point to indicate the light.    
         // Pass in the transformation matrix.
-        Matrix.multiplyMM(modelViewProjectionMatrix, 0, viewMatrix, 0, mLightModelMatrix, 0);
-        Matrix.multiplyMM(modelViewProjectionMatrix, 0, projectionMatrix, 0, modelViewProjectionMatrix, 0);
+        //Matrix.multiplyMM(modelViewProjectionMatrix, 0, viewMatrix, 0, mLightModelMatrix, 0);
+        //Matrix.multiplyMM(modelViewProjectionMatrix, 0, projectionMatrix, 0, modelViewProjectionMatrix, 0);
         GLES20.glUseProgram(obj.mPointProgramHandle); 
-        obj.drawLight(modelViewProjectionMatrix, mLightPosInModelSpace);
+        obj.drawLight(modelViewProjectionMatrix, mLightPosInModelSpace, viewMatrix, mLightModelMatrix, projectionMatrix);
     }
 
     public void onSurfaceChanged(GL10 unused, int width, int height) {
@@ -88,7 +107,9 @@ public class MyRenderer implements GLSurfaceView.Renderer {
         float ratio = (float) width / height;
         
         Matrix.frustumM(projectionMatrix, 0, -ratio, ratio, -1, 1, 1, 9);
-        Matrix.setLookAtM(viewMatrix, 0, 0f, 0f, 7f, 0f, 0f, 0f, 0f, 1.0f, 0.0f);
+        //(viewMatrix, 0, 0.0f, 0.0f, 7.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
+        //Matrix.setLookAtM(viewMatrix, 0, 0.0f, 0.0f, 7.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
+        Matrix.setLookAtM(viewMatrix, 0, 0.0f, 0.0f, -0.5f, 0.0f, 0.0f, -5.0f, 0.0f, 1.0f, 0.0f);
     }
     
     public static int loadShader(int type, String shaderCode){

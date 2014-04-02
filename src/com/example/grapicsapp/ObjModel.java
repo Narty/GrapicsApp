@@ -6,6 +6,7 @@ import java.nio.FloatBuffer;
 import java.nio.ShortBuffer;
 
 import android.opengl.GLES20;
+import android.opengl.Matrix;
 
 public class ObjModel {
 	private final FloatBuffer vertexBuffer;
@@ -28,9 +29,10 @@ public class ObjModel {
     "uniform mat4 uMVPMatrix;" +               // A constant representing the combined model/view/projection matrix.
     "uniform mat4 uMVMatrix;" +                // A constant representing the combined model/view matrix.        
     "uniform vec3 uLightPos;" +                // The position of the light in eye space.
+    "uniform vec4 vColor;" +
           
     "attribute vec4 vPosition;" +              // Per-vertex position information we will pass in.
-    "attribute vec4 vColor;" +                 // Per-vertex colour information we will pass in.
+    //"attribute vec4 vColor = vec4(1.0, 1.0, 1.0, 1.0);" +                 // Per-vertex colour information we will pass in.
     "attribute vec3 vNormal;" +                // Per-vertex normal information we will pass in.
     
     "varying vec4 aColor;" +                   // This will be passed into the fragment shader.
@@ -49,9 +51,10 @@ public class ObjModel {
     // pointing in the same direction then it will get max illumination.
     "float diffuse = max(dot(modelViewNormal, lightVector), 0.1);" +                                                                                                                                       
     // Attenuate the light based on distance.
-    "diffuse = diffuse * (1.0 / (1.0 + (0.25 * distance * distance)));" +
+    "diffuse = diffuse * (1.0 / (1.0 + (0.03 * distance * distance)));" +
  	 // Multiply the colour by the illumination level. It will be interpolated across the triangle.
-    "aColor = vColor * diffuse;" +          
+    //"aColor = (vColor * 0.1) + (vColor * diffuse);" +
+    "aColor = vColor * diffuse;" +  
     // gl_Position is a special variable used to store the final position.
     // Multiply the vertex by the matrix to get the final point in normalised screen coordinates.                
     "gl_Position = uMVPMatrix * vPosition;" +     
@@ -64,7 +67,7 @@ public class ObjModel {
     											// triangle per fragment.                          
     "void main()" +                				// The entry point for our fragment shader.
     "{" +
-    "   gl_FragColor = aColor;" +               // Pass the color directly through the pipeline.                  
+    "   gl_FragColor = aColor;" +               // Pass the color directly through the pipeline.       vec4(1.0, 1.0, 1.0, 1.0)           
     "}";
 	
 	private final String pointVertexShaderCode =
@@ -149,6 +152,11 @@ public class ObjModel {
 	    // get handle to fragment shader's vColor member
 	    mColourLocation = GLES20.glGetUniformLocation(mPerVertexProgramHandle, "vColor");
 	    mLightPosHandle = GLES20.glGetUniformLocation(mPerVertexProgramHandle, "uLightPos");
+	    mMVMatrixHandle = GLES20.glGetUniformLocation(mPerVertexProgramHandle, "uMVMatrix");
+	    MyRenderer.checkGlError("glGetUniformLocation");
+	    // get handle to shape's transformation matrix
+	    mMVPMatrixHandle = GLES20.glGetUniformLocation(mPerVertexProgramHandle, "uMVPMatrix");
+	    MyRenderer.checkGlError("glGetUniformLocation");
 	    
 	    // Prepare the triangle coordinate data
 	    GLES20.glVertexAttribPointer(mPositionHandle, COORDS_PER_VERTEX,
@@ -157,23 +165,24 @@ public class ObjModel {
 	    // Enable a handle to the triangle vertices
 	    GLES20.glEnableVertexAttribArray(mPositionHandle);
 	    
+	    //Pass in the normal information
 	    GLES20.glVertexAttribPointer(mNormalHandle, COORDS_PER_VERTEX, GLES20.GL_FLOAT, false, 
 	    		vertexStride, vertexNormalBuffer);
 
 	    GLES20.glEnableVertexAttribArray(mNormalHandle);
 	    
+	    //Pass in the colour information
+	    //GLES20.glVertexAttribPointer(mColourLocation, COORDS_PER_VERTEX, GLES20.GL_FLOAT, false, vertexStride, );
+	    
 	    // Set colour for drawing the triangle
 	    GLES20.glUniform4fv(mColourLocation, 1, colour, 0);
 	    
-	    mMVMatrixHandle = GLES20.glGetUniformLocation(mPerVertexProgramHandle, "uMVMatrix");
-	    MyRenderer.checkGlError("glGetUniformLocation");
+	    
 	    
 	    GLES20.glUniformMatrix4fv(mMVMatrixHandle, 1, false, modelViewMatrix, 0);
 	    MyRenderer.checkGlError("glUniformMatrix4fv");
 	    
-	    // get handle to shape's transformation matrix
-	    mMVPMatrixHandle = GLES20.glGetUniformLocation(mPerVertexProgramHandle, "uMVPMatrix");
-	    MyRenderer.checkGlError("glGetUniformLocation");
+	    
 
 	    // Apply the projection and view transformation
 	    GLES20.glUniformMatrix4fv(mMVPMatrixHandle, 1, false, modelViewProjectionMatrix, 0);
@@ -186,10 +195,10 @@ public class ObjModel {
                 GLES20.GL_UNSIGNED_SHORT, drawListBuffer);
 
 	    // Disable vertex array
-	    GLES20.glDisableVertexAttribArray(mPositionHandle);
+	    //GLES20.glDisableVertexAttribArray(mPositionHandle);
 	}
 	
-	public void drawLight(float[] modelViewProjectionMatrix, float[] mLightPosInModelSpace){
+	public void drawLight(float[] modelViewProjectionMatrix, float[] mLightPosInModelSpace, float[] viewMatrix, float[] mLightModelMatrix, float[] projectionMatrix){
 		
 		
 		final int pointMVPMatrixHandle = GLES20.glGetUniformLocation(mPointProgramHandle, "uMVPMatrix");
@@ -201,7 +210,9 @@ public class ObjModel {
 
         // Since we are not using a buffer object, disable vertex arrays for this attribute.
         GLES20.glDisableVertexAttribArray(pointPositionHandle);  
-                       
+          
+        Matrix.multiplyMM(modelViewProjectionMatrix, 0, viewMatrix, 0, mLightModelMatrix, 0);
+        Matrix.multiplyMM(modelViewProjectionMatrix, 0, projectionMatrix, 0, modelViewProjectionMatrix, 0);
         GLES20.glUniformMatrix4fv(pointMVPMatrixHandle, 1, false, modelViewProjectionMatrix, 0);
         MyRenderer.checkGlError("glUniformMatrix4fv");
                 
