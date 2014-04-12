@@ -10,6 +10,10 @@ import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.app.Activity;
 import android.view.Menu;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.ViewGroup.LayoutParams;
+import android.widget.Button;
 
 public class MainActivity extends Activity {
 
@@ -28,6 +32,17 @@ public class MainActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		GLView = new MyGLSurfaceView(this);
 		setContentView(GLView);
+		Button b = new Button(this);
+		b.setText("Record");
+		b.setOnClickListener(new OnClickListener() {
+
+			@Override
+			public void onClick(View arg0) {
+				System.out.println("Button Clicked");
+				
+			}});
+		//final Button button = (Button) findViewById(R.id.button1);
+		this.addContentView(b, new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
 		System.out.println("onCreate complete");
 		readFile();
 		System.out.println(vectors.get(2));
