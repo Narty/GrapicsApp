@@ -82,9 +82,10 @@ public class MainActivity extends Activity {
 		try {
 			Scanner lineScanner;
 			String line = "";
-
+			
+			String fileName = "/storage/sdcard0/Download/" + getIntent().getStringExtra("modelName") + ".obj";
 			//scanner = new Scanner(new FileReader("/storage/sdcard0/Download/capsule5252vertices.obj"));
-			scanner = new Scanner(new FileReader("/storage/sdcard0/Download/dragonreduced.obj"));
+			scanner = new Scanner(new FileReader(fileName));
 			//scanner = new Scanner(new FileReader("/storage/sdcard0/Download/spherereduced.obj"));
 			scanner.nextLine();
 			line = scanner.nextLine();
