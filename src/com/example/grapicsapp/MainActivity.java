@@ -17,7 +17,7 @@ import android.widget.Button;
 
 public class MainActivity extends Activity {
 
-	private GLSurfaceView GLView;
+	private MyGLSurfaceView GLView;
 	private ArrayList<Float> vectors = new ArrayList<Float>();
 	private ArrayList<Short> faces = new ArrayList<Short>();
 	private ArrayList<Float> vectorNormals = new ArrayList<Float>();
@@ -38,10 +38,11 @@ public class MainActivity extends Activity {
 
 			@Override
 			public void onClick(View arg0) {
-				System.out.println("Button Clicked");
-				
-			}});
-		//final Button button = (Button) findViewById(R.id.button1);
+				//System.out.println("Button Clicked");
+				GLView.getRenderer().captureFrameTime = true;
+				GLView.getRenderer().frameTimes.clear();
+			}
+		});
 		this.addContentView(b, new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
 		System.out.println("onCreate complete");
 		readFile();
@@ -79,8 +80,8 @@ public class MainActivity extends Activity {
 			Scanner lineScanner;
 			String line = null;
 
-			scanner = new Scanner(new FileReader(
-					"/storage/sdcard0/Download/capsule.obj"));
+			scanner = new Scanner(new FileReader("/storage/sdcard0/Download/capsule5252vertices.obj"));
+			//scanner = new Scanner(new FileReader("/storage/sdcard0/Download/dragon.obj"));
 			scanner.nextLine();
 			line = scanner.nextLine();
 			System.out.println("while vector values start...");

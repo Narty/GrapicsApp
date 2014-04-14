@@ -1,5 +1,11 @@
 package com.example.grapicsapp;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
@@ -8,6 +14,7 @@ import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
 import android.os.SystemClock;
 import android.util.Log;
+import au.com.bytecode.opencsv.CSVWriter;
 
 public class MyRenderer implements GLSurfaceView.Renderer {
 
@@ -32,6 +39,8 @@ public class MyRenderer implements GLSurfaceView.Renderer {
     public volatile float mAngle;
     public volatile float normalisedX = 0;
     public volatile float normalisedY;
+    public ArrayList<String> frameTimes = new ArrayList<String>();
+    public boolean captureFrameTime = false;
 
 	public void onSurfaceCreated(GL10 unused, EGLConfig config) {
         // Set the background frame colour
@@ -47,17 +56,21 @@ public class MyRenderer implements GLSurfaceView.Renderer {
 
     public void onDrawFrame(GL10 unused) {
     	//calculate fps
-    	fps++;
-    	long currentTime =  System.nanoTime();
-    	if(currentTime - prevTime > 999999999) {
-    		System.out.println(fps +  " fps");
-    		fps = 0;
-    		prevTime = currentTime;
-    	}
+    	//fps++;
+    	//long currentTime =  System.nanoTime();
+    	//if(currentTime - prevTime > 999999999) {
+    	//	System.out.println(fps +  " fps");
+    	//	fps = 0;
+    	//	prevTime = currentTime;
+    	//}
         // Redraw background colour
+    	long frameStartTime = 0L;
+    	if(captureFrameTime == true && frameTimes.size() < 101) {
+    		frameStartTime = System.nanoTime();
+    	}
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);
         
-        long time = SystemClock.uptimeMillis() % 10000L;        
+        //long time = SystemClock.uptimeMillis() % 10000L;        
         float angleInDegrees = 0.0f;//(360.0f / 10000.0f) * ((int) time);
         
         
@@ -92,13 +105,37 @@ public class MyRenderer implements GLSurfaceView.Renderer {
         Matrix.multiplyMM(modelViewProjectionMatrix, 0, projectionMatrix, 0, modelViewMatrix, 0);
         
         obj.draw(modelViewProjectionMatrix, mLightPosInEyeSpace, modelViewMatrix);
-        System.out.println("frame drawn " + mAngle);
+        //System.out.println("frame drawn " + mAngle);
         // Draw a point to indicate the light.    
         // Pass in the transformation matrix.
         //Matrix.multiplyMM(modelViewProjectionMatrix, 0, viewMatrix, 0, mLightModelMatrix, 0);
         //Matrix.multiplyMM(modelViewProjectionMatrix, 0, projectionMatrix, 0, modelViewProjectionMatrix, 0);
         GLES20.glUseProgram(obj.mPointProgramHandle); 
         obj.drawLight(modelViewProjectionMatrix, mLightPosInModelSpace, viewMatrix, mLightModelMatrix, projectionMatrix);
+        
+        if(captureFrameTime == true && frameTimes.size() < 101) {
+        	long frameDuration = System.nanoTime() - frameStartTime;
+        	frameTimes.add(frameDuration + "");
+        }
+        if(captureFrameTime == true && frameTimes.size() > 99) {
+        	for(String time: frameTimes) {
+        		//String csvPath = android.os.Environment.getExternalStorageDirectory().getAbsolutePath();
+        		String csvPath = "/storage/sdcard0/Download/data.csv";
+        		System.out.println(csvPath);
+        		List<String []> times = new ArrayList<String []>();
+        		times.add(frameTimes.toArray(new String[frameTimes.size()]));
+        		try {
+					CSVWriter writer = new CSVWriter(new FileWriter(csvPath));
+					writer.writeAll(times);
+					writer.close();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+        		System.out.println("frame time: " + time);
+        		captureFrameTime = false;
+        	}
+        }
     }
 
     public void onSurfaceChanged(GL10 unused, int width, int height) {

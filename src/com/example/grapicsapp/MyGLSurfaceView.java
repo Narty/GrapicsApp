@@ -13,8 +13,12 @@ import android.view.MotionEvent;
 			setEGLContextClientVersion(2);
 			mRenderer = new MyRenderer();
 			setRenderer(mRenderer);
-			setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
+			setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
 			System.out.println("View created");
+		}
+		
+		public MyRenderer getRenderer() {
+			return mRenderer;
 		}
 		
 	    private final float TOUCH_SCALE_FACTOR = 180.0f / 320;
