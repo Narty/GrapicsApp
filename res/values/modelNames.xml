@@ -1,9 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string-array name="modelNames">
-        <item >capsule</item>
-        <item >dragon</item>
-        <item >spherereduced</item>
+        <item>capsule2552vertices</item><item>capsule3752vertices</item><item>capsule5002vertices</item><item>sphere1026vertices</item>
+        <item>sphere6002vertices</item><item>sphere10202vertices</item><item>dragon14979vertices</item><item>dragon29960vertices</item><item >dragon54393vertices</item>
+        
+        
+        
+        
+        
+        
+        
     </string-array>
     
 </resources>

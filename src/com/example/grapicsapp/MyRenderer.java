@@ -37,8 +37,8 @@ public class MyRenderer implements GLSurfaceView.Renderer {
     private final float[] modelViewMatrix = new float[16];
     
     public volatile float mAngle;
-    public volatile float normalisedX = 0;
-    public volatile float normalisedY;
+    public volatile float normalisedX = 90.0f;
+    public volatile float normalisedY = 90.0f;
     public ArrayList<String> frameTimes = new ArrayList<String>();
     public boolean captureFrameTime = false;
 

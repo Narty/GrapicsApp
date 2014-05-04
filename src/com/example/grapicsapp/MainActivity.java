@@ -9,11 +9,13 @@ import java.util.Scanner;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
 import android.app.Activity;
+import android.content.Context;
 import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.Button;
+import android.widget.Toast;
 
 public class MainActivity extends Activity {
 
@@ -41,6 +43,11 @@ public class MainActivity extends Activity {
 				//System.out.println("Button Clicked");
 				GLView.getRenderer().captureFrameTime = true;
 				GLView.getRenderer().frameTimes.clear();
+				Context context = getApplicationContext();
+				CharSequence text = "Frame time recorded";
+				int duration = Toast.LENGTH_SHORT;
+				Toast toast = Toast.makeText(context, text, duration);
+				toast.show();
 			}
 		});
 		this.addContentView(b, new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
@@ -109,7 +116,7 @@ public class MainActivity extends Activity {
 					//vectors.add(Float.parseFloat(lineScanner.next()));
 					//vectors.add(Float.parseFloat(lineScanner.next()));
 					//vectors.add(Float.parseFloat(lineScanner.next()));
-					System.out.println("vertex data");
+					//System.out.println("vertex data");
 					if (scanner.hasNextLine())
 						line = scanner.nextLine();
 					continue;
@@ -120,7 +127,7 @@ public class MainActivity extends Activity {
 					vectorNormals.add(Float.parseFloat(lineScanner.next()));
 					vectorNormals.add(Float.parseFloat(lineScanner.next()));
 					vectorNormals.add(Float.parseFloat(lineScanner.next()));
-					System.out.println("normal data");
+					//System.out.println("normal data");
 					if (scanner.hasNextLine())
 						line = scanner.nextLine();
 					continue;
@@ -136,7 +143,7 @@ public class MainActivity extends Activity {
 					lineScanner.next();
 					lineScanner.next();
 					faces.add(Integer.parseInt(lineScanner.next()));
-					System.out.println("face data");
+					//System.out.println("face data");
 					if (scanner.hasNextLine())
 						line = scanner.nextLine();
 					continue;
